@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="study," />
 
 
 
@@ -79,13 +79,28 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hyasin&#39;s blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="bWAPP简介​    bwapp是一个漏洞演示平台，包含100多个漏洞。可以单独下载安装，也可以下载虚拟机版本。此处给出下载地址:  https://sourceforge.net/projects/bwapp/  xss漏洞练习跨站脚本攻击的终极思路：让输入的内容在页面中回显。  1-XSS - Reflected(GET)1)low等级    未对输入进行过滤 在用户名和密码输入：&amp;lt;s">
+<meta name="keywords" content="study">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bWAPP解法记录——XSS">
+<meta property="og:url" content="http://yoursite.com/2018/10/19/bWAPP解法记录——XSS/index.html">
 <meta property="og:site_name" content="Hyasin&#39;s blog">
+<meta property="og:description" content="bWAPP简介​    bwapp是一个漏洞演示平台，包含100多个漏洞。可以单独下载安装，也可以下载虚拟机版本。此处给出下载地址:  https://sourceforge.net/projects/bwapp/  xss漏洞练习跨站脚本攻击的终极思路：让输入的内容在页面中回显。  1-XSS - Reflected(GET)1)low等级    未对输入进行过滤 在用户名和密码输入：&amp;lt;s">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/19/d974cf6640117da4807af0bbd5de0d0d.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/19/9caa82a94030986980ba84b279eb3492.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/19/4a4375704092b3aa80a5abff0414dc84.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/20/2698cfc9405c934080968f23e941fa64.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/20/feec7680402b2636805cf9af52458b96.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/20/b47f8db840875bac80b54d9e07c35c52.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/20/a517e59440b9c8de807d96f83b8b576b.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/21/aa2fd1a4406687f7801c37eb01d8d4d9.png">
+<meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/21/5b0ee254409cef1d80bf2cdc84ce065f.png">
+<meta property="og:updated_time" content="2018-10-21T11:30:40.208Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hyasin&#39;s blog">
+<meta name="twitter:title" content="bWAPP解法记录——XSS">
+<meta name="twitter:description" content="bWAPP简介​    bwapp是一个漏洞演示平台，包含100多个漏洞。可以单独下载安装，也可以下载虚拟机版本。此处给出下载地址:  https://sourceforge.net/projects/bwapp/  xss漏洞练习跨站脚本攻击的终极思路：让输入的内容在页面中回显。  1-XSS - Reflected(GET)1)low等级    未对输入进行过滤 在用户名和密码输入：&amp;lt;s">
+<meta name="twitter:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/19/d974cf6640117da4807af0bbd5de0d0d.png">
 
 
 
@@ -115,13 +130,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/10/19/bWAPP解法记录——XSS/"/>
 
 
 
 
 
-  <title>Hyasin's blog</title>
+  <title>bWAPP解法记录——XSS | Hyasin's blog</title>
   
 
 
@@ -140,8 +155,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -234,9 +248,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -266,9 +280,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/10/19/bWAPP解法记录——XSS/" itemprop="url">bWAPP解法记录——XSS</a></h1>
+          <h1 class="post-title" itemprop="name headline">bWAPP解法记录——XSS</h1>
         
 
         <div class="post-meta">
@@ -300,6 +312,11 @@
           
 
           
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
 
           
 
@@ -318,9 +335,7 @@
       
 
       
-        
-          
-            <h2 id="bWAPP简介"><a href="#bWAPP简介" class="headerlink" title="bWAPP简介"></a>bWAPP简介</h2><p>​    bwapp是一个漏洞演示平台，包含100多个漏洞。可以单独下载安装，也可以下载虚拟机版本。此处给出下载地址:</p>
+        <h2 id="bWAPP简介"><a href="#bWAPP简介" class="headerlink" title="bWAPP简介"></a>bWAPP简介</h2><p>​    bwapp是一个漏洞演示平台，包含100多个漏洞。可以单独下载安装，也可以下载虚拟机版本。此处给出下载地址:</p>
 <blockquote>
 <p><a href="https://sourceforge.net/projects/bwapp/" target="_blank" rel="noopener">https://sourceforge.net/projects/bwapp/</a></p>
 </blockquote>
@@ -381,8 +396,6 @@
 <hr>
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>​    bwapp内的XSS漏洞覆盖面较广，而一般只要找到攻击点基本就能够成功，所以难度不算太大。多数漏洞在不同的安全等级对输入进行了编码，medium对应addslashes，high等级使用htmlspecialchars。通过这次靶机的练习，我弥补了一些知识的空缺，有不少的收获~</p>
 
-          
-        
       
     </div>
     
@@ -397,254 +410,36 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/07/imgTest/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Hyasin">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/tou.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hyasin's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/07/imgTest/" itemprop="url">imgTest</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-07T09:24:40+08:00">
-                2018-09-07
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/study/" rel="tag"># study</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>图片上传测试</p>
-<p><img src="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/18/d45258d84025f48f807a80f3861df6a2.jpg" alt=""></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
       
 
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/05/The-First-Post/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Hyasin">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/tou.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hyasin's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/05/The-First-Post/" itemprop="url">The First Post</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-05T19:53:42+08:00">
-                2018-09-05
-              </time>
+              <a href="/2018/09/07/imgTest/" rel="next" title="imgTest">
+                <i class="fa fa-chevron-left"></i> imgTest
+              </a>
             
+          </div>
 
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
             
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <h2 id="My-First-Post"><a href="#My-First-Post" class="headerlink" title="My First Post"></a>My First Post</h2>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -654,10 +449,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -665,6 +461,8 @@
 
 
           
+  
+
 
         </div>
         
@@ -685,8 +483,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -743,6 +550,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#bWAPP简介"><span class="nav-number">1.</span> <span class="nav-text">bWAPP简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xss漏洞练习"><span class="nav-number">2.</span> <span class="nav-text">xss漏洞练习</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-XSS-Reflected-GET"><span class="nav-number">2.1.</span> <span class="nav-text">1-XSS - Reflected(GET)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-XSS-Reflected-POST"><span class="nav-number">2.2.</span> <span class="nav-text">2-XSS - Reflected(POST)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-XSS-Reflected-JSON"><span class="nav-number">2.3.</span> <span class="nav-text">3-XSS - Reflected(JSON)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-XSS-Reflected-AJAX-JSON"><span class="nav-number">2.4.</span> <span class="nav-text">4-XSS - Reflected(AJAX/JSON)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-XSS-Reflected-AJAX-XML"><span class="nav-number">2.5.</span> <span class="nav-text">5-XSS - Reflected(AJAX/XML)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-XSS-Reflected-Back-Button"><span class="nav-number">2.6.</span> <span class="nav-text">6-XSS - Reflected(Back Button)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-XSS-Reflected-Custom-Header"><span class="nav-number">2.7.</span> <span class="nav-text">7-XSS - Reflected(Custom Header)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-XSS-Reflected-Eval"><span class="nav-number">2.8.</span> <span class="nav-text">8-XSS - Reflected (Eval)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-XSS-Reflected-HREF"><span class="nav-number">2.9.</span> <span class="nav-text">9-XSS - Reflected(HREF)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-XSS-Reflected-Login-form"><span class="nav-number">2.10.</span> <span class="nav-text">10-XSS - Reflected(Login form)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-XSS-Reflected-phpMyAdmin"><span class="nav-number">2.11.</span> <span class="nav-text">11-XSS - Reflected(phpMyAdmin)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-XSS-Reflected-PHP-SELF"><span class="nav-number">2.12.</span> <span class="nav-text">12-XSS - Reflected(PHP_SELF)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-XSS-Reflected-Referer"><span class="nav-number">2.13.</span> <span class="nav-text">13-XSS - Reflected(Referer)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">2.14.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-XSS-Reflected-User-Agent"><span class="nav-number">2.15.</span> <span class="nav-text">14-XSS - Reflected(User-Agent)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-XSS-Stored-Blog"><span class="nav-number">2.16.</span> <span class="nav-text">15-XSS - Stored(Blog)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-XSS-Stored-Change-Secret"><span class="nav-number">2.17.</span> <span class="nav-text">16-XSS - Stored(Change Secret)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-XSS-Stored-Cookies"><span class="nav-number">2.18.</span> <span class="nav-text">17-XSS - Stored(Cookies)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-XSS-Stored-SQLiteManager"><span class="nav-number">2.19.</span> <span class="nav-text">18-XSS - Stored(SQLiteManager)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-XSS-Stored-User-Agent"><span class="nav-number">2.20.</span> <span class="nav-text">19-XSS - Stored(User-Agent)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结语"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -894,6 +717,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
 
   
 

